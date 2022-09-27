@@ -1,4 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common/exceptions";
+import { RpcException } from "@nestjs/microservices";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateIngredientDto } from "./dto/create-ingredient.dto";
@@ -20,17 +22,26 @@ export class IngredientsService {
     return this.ingredientsRepository.find();
   }
 
-  findOne(id: string) {
-    return this.ingredientsRepository.findOneBy({
+  async findOne(id: string) {
+    const ingredient = await this.ingredientsRepository.findOneBy({
       id,
+    });
+
+    if (!ingredient) {
+      throw new NotFoundException("Ingredient not found");
+    }
+
+    return ingredient;
+  }
+
+  update(id: string, updateIngredientDto: UpdateIngredientDto) {
+    return this.ingredientsRepository.save({
+      id,
+      ...updateIngredientDto,
     });
   }
 
-  update(id: number, updateIngredientDto: UpdateIngredientDto) {
-    return `This action updates a #${id} ingredient`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} ingredient`;
+  remove(id: string) {
+    return this.ingredientsRepository.delete(id);
   }
 }

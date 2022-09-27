@@ -1,38 +1,45 @@
-import { Controller } from "@nestjs/common";
-import { MessagePattern, Payload } from "@nestjs/microservices";
-import { IngredientsService } from "./ingredients.service";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from "@nestjs/common";
 import { CreateIngredientDto } from "./dto/create-ingredient.dto";
 import { UpdateIngredientDto } from "./dto/update-ingredient.dto";
+import { IngredientsService } from "./ingredients.service";
 
-@Controller()
+@Controller("ingredients")
 export class IngredientsController {
   constructor(private readonly ingredientsService: IngredientsService) {}
 
-  @MessagePattern("createIngredient")
-  create(@Payload() createIngredientDto: CreateIngredientDto) {
+  @Post()
+  create(@Body() createIngredientDto: CreateIngredientDto) {
     return this.ingredientsService.create(createIngredientDto);
   }
 
-  @MessagePattern("findAllIngredients")
-  findAll() {
+  @Get()
+  async findAll() {
     return this.ingredientsService.findAll();
   }
 
-  @MessagePattern("findOneIngredient")
-  findOne(@Payload() id: number) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.ingredientsService.findOne(id);
   }
 
-  @MessagePattern("updateIngredient")
-  update(@Payload() updateIngredientDto: UpdateIngredientDto) {
-    return this.ingredientsService.update(
-      updateIngredientDto.id,
-      updateIngredientDto
-    );
+  @Put(":id")
+  update(
+    @Param("id") id: string,
+    @Body() updateIngredientDto: UpdateIngredientDto
+  ) {
+    return this.ingredientsService.update(id, updateIngredientDto);
   }
 
-  @MessagePattern("removeIngredient")
-  remove(@Payload() id: number) {
+  @Delete(":id")
+  remove(@Param() id: string) {
     return this.ingredientsService.remove(id);
   }
 }

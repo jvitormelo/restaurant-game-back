@@ -1,7 +1,9 @@
-import { Column, PrimaryGeneratedColumn } from "typeorm";
+import { Stock } from "src/stock/entities/stock.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { IngredientCategory } from "../constants/category.enum";
 import { IngredientQuality } from "../constants/quality.enum";
 
+@Entity()
 export class Ingredient {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -14,4 +16,7 @@ export class Ingredient {
 
   @Column("enum", { enum: IngredientQuality })
   quality: IngredientQuality;
+
+  @OneToMany(() => Stock, (stock) => stock.ingredient)
+  stocks: Stock[];
 }
