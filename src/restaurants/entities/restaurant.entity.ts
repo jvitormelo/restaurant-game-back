@@ -1,3 +1,4 @@
+import { Cooker } from "src/cooks/entities/cooker.entity";
 import { Stock } from "src/stock/entities/stock.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -14,4 +15,7 @@ export class Restaurant {
 
   @OneToMany(() => Stock, (stock) => stock.restaurant)
   stocks: Stock[];
+
+  @OneToMany(() => Cooker, (cooker) => cooker.restaurant)
+  cooks: Cooker[];
 }

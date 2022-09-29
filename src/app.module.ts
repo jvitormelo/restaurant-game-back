@@ -6,6 +6,12 @@ import { databaseConfig } from "./common/config/database.config";
 import { IngredientsModule } from "./ingredients/ingredients.module";
 import { StockModule } from "./stock/stock.module";
 import { RestaurantsModule } from "./restaurants/restaurants.module";
+import { ScheduleModule } from "@nestjs/schedule";
+import { MenusModule } from "./menus/menus.module";
+import { CustomersModule } from "./customers/customers.module";
+import { BullModule } from "@nestjs/bull";
+import { OrdersModule } from './orders/orders.module';
+import { CooksModule } from './cooks/cooks.module';
 
 @Module({
   imports: [
@@ -13,6 +19,17 @@ import { RestaurantsModule } from "./restaurants/restaurants.module";
     IngredientsModule,
     StockModule,
     RestaurantsModule,
+    ScheduleModule.forRoot(),
+    MenusModule,
+    CustomersModule,
+    BullModule.forRoot({
+      redis: {
+        host: "localhost",
+        port: 6379,
+      },
+    }),
+    OrdersModule,
+    CooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
