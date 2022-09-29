@@ -1,6 +1,6 @@
 export enum IngredientQuality {
-  BAD,
-  AVERAGE,
-  GOOD,
-  EXCELLENT,
+  BAD = "bad",
+  AVERAGE = "average",
+  GOOD = "good",
+  EXCELLENT = "excellent",
 }

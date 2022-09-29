@@ -1,7 +1,7 @@
 export enum IngredientCategory {
-  VEGETABLE,
-  FRUIT,
-  DAIRY,
-  MEAT,
-  FISH,
+  VEGETABLE = "vegetable",
+  FRUIT = "fruit",
+  DAIRY = "dairy",
+  MEAT = "meat",
+  FISH = "fish",
 }

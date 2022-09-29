@@ -12,6 +12,7 @@ import { CustomersModule } from "./customers/customers.module";
 import { BullModule } from "@nestjs/bull";
 import { OrdersModule } from './orders/orders.module';
 import { CooksModule } from './cooks/cooks.module';
+import { DishesModule } from './dishes/dishes.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CooksModule } from './cooks/cooks.module';
     }),
     OrdersModule,
     CooksModule,
+    DishesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

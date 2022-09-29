@@ -18,18 +18,20 @@ export class StockService {
   }
 
   findAll() {
-    return this.stockRepository.find();
+    return this.stockRepository.find({
+      relations: ["ingredient"],
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} stock`;
+  findOne(id?: string, ingredientId?: string) {
+    return this.stockRepository.findOneBy({ id, ingredientId });
   }
 
   update(id: string, { quantity }: UpdateStockDto) {
     return this.stockRepository.save({ id, quantity: quantity });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} stock`;
+  remove(id: string) {
+    return this.stockRepository.delete(id);
   }
 }

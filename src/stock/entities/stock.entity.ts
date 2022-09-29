@@ -3,13 +3,11 @@ import { Restaurant } from "src/restaurants/entities/restaurant.entity";
 import {
   BeforeInsert,
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   PrimaryColumn,
-  PrimaryGeneratedColumn,
 } from "typeorm";
 
 @Entity()
@@ -46,4 +44,10 @@ export class Stock {
   setId() {
     this.id = this.restaurantId + this.ingredientId;
   }
+
+  @CreateDateColumn({
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP(6)",
+  })
+  createdAt: Date;
 }

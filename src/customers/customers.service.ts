@@ -5,6 +5,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Queue } from "bull";
 import { Cooker } from "src/cooks/entities/cooker.entity";
 import { IngredientCategory } from "src/ingredients/constants/category.enum";
+import { IngredientQuality } from "src/ingredients/constants/quality.enum";
 import { MenuDish } from "src/menus/entities/menu.entity";
 import { Restaurant } from "src/restaurants/entities/restaurant.entity";
 import { Stock } from "src/stock/entities/stock.entity";
@@ -15,7 +16,7 @@ export interface IStock {
   name: string;
   quantity: number;
   category: IngredientCategory;
-  quality: number;
+  quality: IngredientQuality;
 }
 
 @Injectable()
@@ -32,9 +33,9 @@ export class CustomersService {
     @InjectQueue("order") private orderQueue: Queue
   ) {}
 
-  // @Interval(5000)
+  @Interval(10000)
   handleCron() {
-    this.makeOrder();
+    // this.makeOrder();
   }
   // TODO separate
   async makeOrder() {

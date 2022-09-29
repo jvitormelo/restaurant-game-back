@@ -26,7 +26,7 @@ export class StockController {
     return this.stockService.findAll();
   }
 
-  findOne(@Param() id: number) {
+  findOne(@Param() id: string) {
     return this.stockService.findOne(id);
   }
 
@@ -35,7 +35,7 @@ export class StockController {
     return this.stockService.update(id, updateStockDto);
   }
 
-  remove(@Param() id: number) {
+  remove(@Param() id: string) {
     return this.stockService.remove(id);
   }
 }
