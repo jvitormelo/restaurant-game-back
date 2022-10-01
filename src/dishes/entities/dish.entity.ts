@@ -1,7 +1,7 @@
 import { Cooker } from "src/cooks/entities/cooker.entity";
-import { IngredientStock } from "src/customers/customers.service";
 import { IngredientQuality } from "src/ingredients/constants/quality.enum";
 import { getValueBetween } from "src/shared/getValueBetween";
+import { IngredientStock } from "src/stock/types/ingredient-stock";
 import {
   BeforeInsert,
   Column,
@@ -28,6 +28,9 @@ export class Dish {
 
   @Column()
   experience: number;
+
+  @Column()
+  cookedBy: string;
 
   @CreateDateColumn({
     type: "timestamp",

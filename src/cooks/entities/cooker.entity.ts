@@ -11,7 +11,7 @@ export class Cooker {
   name: string;
 
   @Column({
-    default: 0,
+    default: 1,
   })
   level: number;
 

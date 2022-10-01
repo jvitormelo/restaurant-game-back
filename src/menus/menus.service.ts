@@ -23,7 +23,7 @@ export class MenusService {
   }
 
   findOne(id: string) {
-    return "";
+    return id;
   }
 
   async findRandomDish(restaurantLevel: number) {

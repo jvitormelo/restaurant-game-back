@@ -1,5 +1,5 @@
 import { Cooker } from "src/cooks/entities/cooker.entity";
-import { IngredientStock } from "src/customers/customers.service";
+import { IngredientStock } from "src/stock/types/ingredient-stock";
 
 export class CreateDishDto {
   id: string;

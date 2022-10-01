@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { IngredientStock } from "src/customers/customers.service";
 import { IngredientCategory } from "src/ingredients/constants/category.enum";
 import { MenuDish } from "src/menus/entities/menu.entity";
 import { FindOptionsWhere, Repository } from "typeorm";
 import { CreateStockDto } from "./dto/create-stock.dto";
 import { UpdateStockDto } from "./dto/update-stock.dto";
 import { Stock } from "./entities/stock.entity";
+import { IngredientStock } from "./types/ingredient-stock";
 
 interface FindOneParams {
   id?: string;
@@ -41,7 +41,7 @@ export class StockService {
   }
 
   update(id: string, { quantity }: UpdateStockDto) {
-    return this.stockRepository.save({ id, quantity: quantity });
+    return this.stockRepository.save({ id, quantity });
   }
 
   remove(id: string) {
@@ -91,12 +91,11 @@ export class StockService {
 
     const {
       ingredient: { id, quality, category, name },
-      quantity,
     } = foundStock;
 
     return {
       id,
-      quantity,
+      quantity: ingredientQuantity,
       quality,
       category,
       name,
@@ -108,5 +107,28 @@ export class StockService {
     stock: Stock[]
   ) {
     return stock.find(({ ingredient }) => ingredient.category === category);
+  }
+
+  async removeIngredientsFromStock(ingredients: IngredientStock[]) {
+    const promises = ingredients.map(async (ingredient) => {
+      const stockIngredient = await this.findOne({
+        ingredientId: ingredient.id,
+      });
+
+      const remainingQuantity = stockIngredient.quantity - ingredient.quantity;
+
+      if (remainingQuantity <= 0) {
+        console.warn("ingredient", ingredient);
+        console.warn("removing ingredient from stock");
+
+        // await this.remove(foundIngredient.id);
+      } else {
+        await this.update(stockIngredient.id, {
+          quantity: remainingQuantity,
+        });
+      }
+    });
+
+    await Promise.all(promises);
   }
 }

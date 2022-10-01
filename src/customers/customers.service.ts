@@ -1,43 +1,38 @@
 import { InjectQueue } from "@nestjs/bull";
 import { Injectable } from "@nestjs/common";
+import { Logger } from "@nestjs/common/services";
+import { Interval } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Queue } from "bull";
-import { CooksService } from "src/cooks/cooks.service";
-import { IngredientCategory } from "src/ingredients/constants/category.enum";
-import { IngredientQuality } from "src/ingredients/constants/quality.enum";
-import { MenuDish } from "src/menus/entities/menu.entity";
+import { QueueName } from "src/common/constants/queue-name.constant";
 import { MenusService } from "src/menus/menus.service";
+import { OrderPayload } from "src/orders/orders.consumer";
 import { Restaurant } from "src/restaurants/entities/restaurant.entity";
-import { Stock } from "src/stock/entities/stock.entity";
 import { StockService } from "src/stock/stock.service";
 import { Repository } from "typeorm";
 
-export interface IngredientStock {
-  id: string;
-  name: string;
-  quantity: number;
-  category: IngredientCategory;
-  quality: IngredientQuality;
-}
+const MAXIMUM_ORDERS_PER_RESTAURANT = 5;
 
 @Injectable()
 export class CustomersService {
+  private readonly logger = new Logger(CustomersService.name);
+
   constructor(
     @InjectRepository(Restaurant)
     private restaurantRepository: Repository<Restaurant>,
     private menusService: MenusService,
     private stockService: StockService,
-    private cooksService: CooksService,
-    @InjectQueue("order") private orderQueue: Queue
+    @InjectQueue(QueueName.ORDER) private orderQueue: Queue<OrderPayload>
   ) {}
 
-  // @Interval(10000)
+  @Interval(4000)
   handleCron() {
     this.makeOrder();
   }
 
   async makeOrder() {
     try {
+      this.logger.log(`New customer arrived`);
       const [restaurant] = await this.restaurantRepository.find();
 
       const dish = await this.menusService.findRandomDish(restaurant.level);
@@ -48,20 +43,23 @@ export class CustomersService {
         },
       });
 
+      const awaitingToCookQueue = await this.orderQueue.getFailedCount();
+
+      if (awaitingToCookQueue > MAXIMUM_ORDERS_PER_RESTAURANT) {
+        throw new Error("Too many orders awaiting to cook");
+      }
+
       const ingredients = this.stockService.verifyStock(dish, restaurantStock);
 
-      const cooker = await this.cooksService.findAvailableCooker(restaurant.id);
+      this.logger.log(`Ordering ${dish.name} from ${restaurant.name}`);
 
-      const payload = {
+      await this.orderQueue.add({
         restaurantId: restaurant.id,
         dish,
         ingredients,
-        cooker,
-      };
-
-      await this.orderQueue.add(payload);
+      });
     } catch (e) {
-      console.error(e.message);
+      this.logger.error(e.message);
     }
   }
 }

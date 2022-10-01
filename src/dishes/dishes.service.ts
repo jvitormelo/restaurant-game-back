@@ -16,6 +16,7 @@ export class DishesService {
     const { cooker, ingredients } = createDishDto;
 
     const dish = new Dish();
+    dish.cookedBy = cooker.id;
     dish.description = createDishDto.description;
     dish.name = createDishDto.name;
     dish.price = createDishDto.price;
@@ -35,7 +36,7 @@ export class DishesService {
   }
 
   update(id: number, updateDishDto: UpdateDishDto) {
-    return `This action updates a #${id} dish`;
+    return `This action updates a #${id} dish ${updateDishDto.cooker}`;
   }
 
   remove(id: number) {

@@ -1,18 +1,18 @@
+import { BullModule } from "@nestjs/bull";
 import { Module } from "@nestjs/common";
+import { ScheduleModule } from "@nestjs/schedule";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { databaseConfig } from "./common/config/database.config";
-import { IngredientsModule } from "./ingredients/ingredients.module";
-import { StockModule } from "./stock/stock.module";
-import { RestaurantsModule } from "./restaurants/restaurants.module";
-import { ScheduleModule } from "@nestjs/schedule";
-import { MenusModule } from "./menus/menus.module";
+import { CooksModule } from "./cooks/cooks.module";
 import { CustomersModule } from "./customers/customers.module";
-import { BullModule } from "@nestjs/bull";
-import { OrdersModule } from './orders/orders.module';
-import { CooksModule } from './cooks/cooks.module';
-import { DishesModule } from './dishes/dishes.module';
+import { DishesModule } from "./dishes/dishes.module";
+import { IngredientsModule } from "./ingredients/ingredients.module";
+import { MenusModule } from "./menus/menus.module";
+import { OrdersModule } from "./orders/orders.module";
+import { RestaurantsModule } from "./restaurants/restaurants.module";
+import { StockModule } from "./stock/stock.module";
 
 @Module({
   imports: [

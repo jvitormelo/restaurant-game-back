@@ -1,61 +1,57 @@
-import { Process, Processor } from "@nestjs/bull";
-import { Job } from "bull";
+import { InjectQueue, Process, Processor } from "@nestjs/bull";
+import { Job, Queue } from "bull";
+import { QueueName } from "src/common/constants/queue-name.constant";
 import { CooksService } from "src/cooks/cooks.service";
-import { Cooker } from "src/cooks/entities/cooker.entity";
-import { IngredientStock } from "src/customers/customers.service";
-import { DishesService } from "src/dishes/dishes.service";
 import { MenuDish } from "src/menus/entities/menu.entity";
-import { StockService } from "src/stock/stock.service";
-interface OrderPayload {
+import { IngredientStock } from "src/stock/types/ingredient-stock";
+import { Logger } from "@nestjs/common";
+import { CookingOrderPayload } from "src/cooks/cooks.consumer";
+
+export interface OrderPayload {
   restaurantId: string;
   dish: MenuDish;
   ingredients: IngredientStock[];
-  cooker: Cooker;
 }
 
-@Processor("order")
+@Processor(QueueName.ORDER)
 export class OrderConsumer {
   constructor(
     private cooksService: CooksService,
-    private readonly dishesService: DishesService,
-    private readonly stockService: StockService
+    @InjectQueue(QueueName.COOKING_ORDER)
+    private cookingOrderQueue: Queue<CookingOrderPayload>
   ) {}
 
+  private readonly logger = new Logger(OrderConsumer.name);
+
   @Process()
-  async transcode(job: Job<OrderPayload>) {
-    const cooker = new Cooker(job.data.cooker);
+  async addToCookingQueue(job: Job<OrderPayload>) {
+    const { restaurantId, dish, ingredients } = job.data;
 
-    cooker.status = "unavailable";
+    const cooker = await this.cooksService.findAvailableCooker(restaurantId);
 
-    await this.cooksService.update(job.data.cooker.id, cooker);
+    if (!cooker) {
+      this.logger.error(`No cooker available to make ${dish.name}`);
+      return job.moveToFailed({ message: "No available cookers" });
+    }
 
-    job.data.ingredients.map(async (ingredient) => {
-      const foundIngredient = await this.stockService.findOne({
-        ingredientId: ingredient.id,
-      });
-
-      const remainingQuantity = foundIngredient.quantity - ingredient.quantity;
-
-      if (remainingQuantity <= 0) {
-        await this.stockService.remove(foundIngredient.id);
-      } else {
-        await this.stockService.update(foundIngredient.id, {
-          quantity: remainingQuantity,
-        });
-      }
+    await this.cooksService.update({
+      id: cooker.id,
+      status: "unavailable",
     });
 
-    const createdDish = await this.dishesService.create({
-      ...job.data,
-      ...job.data.dish,
-    });
+    this.cookingOrderQueue.add(
+      {
+        ingredients,
+        dish,
+        cooker,
+      },
+      { delay: dish.timeToCook }
+    );
 
-    cooker.status = "available";
+    this.logger.log(
+      `Order ${job.id} added to cooking queue for ${cooker.name}`
+    );
 
-    cooker.addExperience(createdDish.experience);
-
-    await this.cooksService.update(job.data.cooker.id, cooker);
-
-    job.finished();
+    job.moveToCompleted();
   }
 }
