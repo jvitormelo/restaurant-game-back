@@ -2,14 +2,14 @@ import { Process, Processor } from "@nestjs/bull";
 import { Job } from "bull";
 import { CooksService } from "src/cooks/cooks.service";
 import { Cooker } from "src/cooks/entities/cooker.entity";
-import { IStock } from "src/customers/customers.service";
+import { IngredientStock } from "src/customers/customers.service";
 import { DishesService } from "src/dishes/dishes.service";
 import { MenuDish } from "src/menus/entities/menu.entity";
 import { StockService } from "src/stock/stock.service";
 interface OrderPayload {
   restaurantId: string;
   dish: MenuDish;
-  ingredients: IStock[];
+  ingredients: IngredientStock[];
   cooker: Cooker;
 }
 

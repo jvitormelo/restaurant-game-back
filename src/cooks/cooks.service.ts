@@ -36,4 +36,18 @@ export class CooksService {
   remove(id: number) {
     return `This action removes a #${id} cook`;
   }
+
+  async findAvailableCooker(restaurantId: string) {
+    const cooker = await this.cookerRepository.findOne({
+      where: {
+        restaurant: { id: restaurantId },
+        status: "available",
+      },
+    });
+
+    if (!cooker) {
+      throw new Error("No available cooker");
+    }
+    return cooker;
+  }
 }

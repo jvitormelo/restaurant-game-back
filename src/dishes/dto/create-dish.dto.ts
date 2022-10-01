@@ -1,5 +1,5 @@
 import { Cooker } from "src/cooks/entities/cooker.entity";
-import { IStock } from "src/customers/customers.service";
+import { IngredientStock } from "src/customers/customers.service";
 
 export class CreateDishDto {
   id: string;
@@ -12,7 +12,7 @@ export class CreateDishDto {
 
   experience: number;
 
-  ingredients: IStock[];
+  ingredients: IngredientStock[];
 
   cooker: Cooker;
 }

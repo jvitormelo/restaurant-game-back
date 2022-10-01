@@ -1,5 +1,5 @@
 import { Cooker } from "src/cooks/entities/cooker.entity";
-import { IStock } from "src/customers/customers.service";
+import { IngredientStock } from "src/customers/customers.service";
 import { IngredientQuality } from "src/ingredients/constants/quality.enum";
 import { getValueBetween } from "src/shared/getValueBetween";
 import {
@@ -43,7 +43,7 @@ export class Dish {
     this.addBonus(bonus);
   }
 
-  applyIngredientsBonus(ingredients: IStock[]) {
+  applyIngredientsBonus(ingredients: IngredientStock[]) {
     const highestIngredient = ingredients.reduce((prev, curr) => {
       return prev.quantity > curr.quantity ? prev : curr;
     });
