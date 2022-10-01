@@ -27,4 +27,19 @@ export class Cooker {
     default: "available",
   })
   status: CookStatus;
+
+  addExperience(experience: number) {
+    this.experience += experience;
+
+    const neededExperience = this.level * 100;
+
+    if (this.experience / neededExperience >= 1) {
+      this.level++;
+      this.experience = this.experience % neededExperience;
+    }
+  }
+
+  constructor(partial: Partial<Cooker>) {
+    Object.assign(this, partial);
+  }
 }

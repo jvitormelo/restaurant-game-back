@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 
-const BONUS_FACTOR = 0.05;
+const BONUS_FACTOR = 0.01;
 
 @Entity()
 export class Dish {

@@ -17,6 +17,9 @@ export class MenuDish {
   @Column({ default: 5 })
   experience: number;
 
+  @Column({ default: 5000 })
+  timeToCook: number;
+
   @Column({ default: 1 })
   restaurantLevel: number;
 

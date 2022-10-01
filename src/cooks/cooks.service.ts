@@ -29,8 +29,8 @@ export class CooksService {
     return `This action returns a #${id} cook`;
   }
 
-  update(id: number, updateCookDto: UpdateCookDto) {
-    return `This action updates a #${id} cook`;
+  update(id: string, updateCookDto: UpdateCookDto) {
+    return this.cookerRepository.update(id, updateCookDto);
   }
 
   remove(id: number) {

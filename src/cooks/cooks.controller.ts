@@ -32,7 +32,7 @@ export class CooksController {
 
   @Patch(":id")
   update(@Param("id") id: string, @Body() updateCookDto: UpdateCookDto) {
-    return this.cooksService.update(+id, updateCookDto);
+    return this.cooksService.update(id, updateCookDto);
   }
 
   @Delete(":id")

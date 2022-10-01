@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { getRandomValueFromArray } from "src/shared/getRandomValueFromArray";
+import { LessThanOrEqual, Repository } from "typeorm";
 import { CreateMenuDto } from "./dto/create-menu.dto";
 import { UpdateMenuDto } from "./dto/update-menu.dto";
 
@@ -21,8 +22,18 @@ export class MenusService {
     return this.menuRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} menu`;
+  findOne(id: string) {
+    return "";
+  }
+
+  async findRandomDish(restaurantLevel: number) {
+    const menu = await this.menuRepository.find({
+      where: {
+        restaurantLevel: LessThanOrEqual(restaurantLevel),
+      },
+    });
+
+    return getRandomValueFromArray<MenuDish>(menu);
   }
 
   update(id: string, updateMenuDto: UpdateMenuDto) {

@@ -27,7 +27,7 @@ export class StockController {
   }
 
   findOne(@Param() id: string) {
-    return this.stockService.findOne(id);
+    return this.stockService.findOne({ id });
   }
 
   @Put(":id")

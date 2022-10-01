@@ -1,9 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { FindOptionsWhere, Repository } from "typeorm";
 import { CreateStockDto } from "./dto/create-stock.dto";
 import { UpdateStockDto } from "./dto/update-stock.dto";
 import { Stock } from "./entities/stock.entity";
+
+interface FindOneParams {
+  id?: string;
+  ingredientId?: string;
+}
+
+interface FindAllParams {
+  where?: FindOptionsWhere<Stock>;
+}
 
 @Injectable()
 export class StockService {
@@ -17,13 +26,14 @@ export class StockService {
     return this.stockRepository.save(stock);
   }
 
-  findAll() {
+  findAll(params?: FindAllParams) {
     return this.stockRepository.find({
       relations: ["ingredient"],
+      where: params?.where,
     });
   }
 
-  findOne(id?: string, ingredientId?: string) {
+  findOne({ id, ingredientId }: FindOneParams) {
     return this.stockRepository.findOneBy({ id, ingredientId });
   }
 

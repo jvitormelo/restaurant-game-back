@@ -9,6 +9,7 @@ import { DishesService } from "src/dishes/dishes.service";
 import { Dish } from "src/dishes/entities/dish.entity";
 import { StockService } from "src/stock/stock.service";
 import { Stock } from "src/stock/entities/stock.entity";
+import { CooksService } from "src/cooks/cooks.service";
 
 @Module({
   imports: [
@@ -19,6 +20,12 @@ import { Stock } from "src/stock/entities/stock.entity";
   ],
   controllers: [OrdersController],
 
-  providers: [OrdersService, OrderConsumer, DishesService, StockService],
+  providers: [
+    OrdersService,
+    OrderConsumer,
+    DishesService,
+    StockService,
+    CooksService,
+  ],
 })
 export class OrdersModule {}

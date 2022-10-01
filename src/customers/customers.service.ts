@@ -1,15 +1,15 @@
 import { InjectQueue } from "@nestjs/bull";
 import { Injectable } from "@nestjs/common";
-import { Interval } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Queue } from "bull";
 import { Cooker } from "src/cooks/entities/cooker.entity";
 import { IngredientCategory } from "src/ingredients/constants/category.enum";
 import { IngredientQuality } from "src/ingredients/constants/quality.enum";
 import { MenuDish } from "src/menus/entities/menu.entity";
+import { MenusService } from "src/menus/menus.service";
 import { Restaurant } from "src/restaurants/entities/restaurant.entity";
-import { Stock } from "src/stock/entities/stock.entity";
-import { LessThanOrEqual, Repository } from "typeorm";
+import { StockService } from "src/stock/stock.service";
+import { Repository } from "typeorm";
 
 export interface IStock {
   id: string;
@@ -24,48 +24,42 @@ export class CustomersService {
   constructor(
     @InjectRepository(Restaurant)
     private restaurantRepository: Repository<Restaurant>,
-    @InjectRepository(MenuDish)
-    private menuRepository: Repository<MenuDish>,
-    @InjectRepository(Stock)
-    private stockRepository: Repository<Stock>,
+    private menusService: MenusService,
+    private stockService: StockService,
     @InjectRepository(Cooker)
     private cookerRepository: Repository<Cooker>,
     @InjectQueue("order") private orderQueue: Queue
   ) {}
 
-  @Interval(10000)
+  // @Interval(10000)
   handleCron() {
-    // this.makeOrder();
+    this.makeOrder();
   }
-  // TODO separate
+
   async makeOrder() {
-    const [restaurant] = await this.restaurantRepository.find();
-
-    const menu = await this.menuRepository.find({
-      where: {
-        restaurantLevel: LessThanOrEqual(restaurant.level),
-      },
-    });
-
-    const dish = menu[Math.floor(Math.random() * menu.length)];
-
-    const restaurantStock = await this.stockRepository.find({
-      where: {
-        restaurantId: restaurant.id,
-      },
-      relations: ["ingredient"],
-    });
-
-    const stock = restaurantStock.map((stock) => ({
-      id: stock.ingredient.id,
-      quantity: stock.quantity,
-      category: stock.ingredient.category,
-      quality: stock.ingredient.quality,
-      name: stock.ingredient.name,
-    }));
-
     try {
+      const [restaurant] = await this.restaurantRepository.find();
+
+      const dish = await this.menusService.findRandomDish(restaurant.level);
+
+      const restaurantStock = await this.stockService.findAll({
+        where: {
+          restaurantId: restaurant.id,
+        },
+      });
+
+      console.log(restaurantStock);
+
+      const stock = restaurantStock.map((stock) => ({
+        id: stock.ingredient.id,
+        quantity: stock.quantity,
+        category: stock.ingredient.category,
+        quality: stock.ingredient.quality,
+        name: stock.ingredient.name,
+      }));
+
       const ingredients = this.verifyStock(dish, stock);
+
       const cooker = await this.findAvailableCooker(restaurant.id);
 
       const payload = {
@@ -75,7 +69,7 @@ export class CustomersService {
         cooker,
       };
 
-      this.orderQueue.add(payload);
+      await this.orderQueue.add(payload, {});
     } catch (e) {
       console.error(e.message);
     }
@@ -139,12 +133,17 @@ export class CustomersService {
     return stock.find((ingredient) => ingredient.category === category);
   }
 
-  findAvailableCooker(restaurantId: string) {
-    return this.cookerRepository.findOneOrFail({
+  async findAvailableCooker(restaurantId: string) {
+    const cooker = await this.cookerRepository.findOne({
       where: {
         restaurant: { id: restaurantId },
         status: "available",
       },
     });
+
+    if (!cooker) {
+      throw new Error("No available cooker");
+    }
+    return cooker;
   }
 }

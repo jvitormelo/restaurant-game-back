@@ -1,12 +1,11 @@
-import { Processor, Process } from "@nestjs/bull";
-import { InjectRepository } from "@nestjs/typeorm";
+import { Process, Processor } from "@nestjs/bull";
 import { Job } from "bull";
+import { CooksService } from "src/cooks/cooks.service";
 import { Cooker } from "src/cooks/entities/cooker.entity";
 import { IStock } from "src/customers/customers.service";
 import { DishesService } from "src/dishes/dishes.service";
 import { MenuDish } from "src/menus/entities/menu.entity";
 import { StockService } from "src/stock/stock.service";
-import { Repository } from "typeorm";
 interface OrderPayload {
   restaurantId: string;
   dish: MenuDish;
@@ -17,33 +16,23 @@ interface OrderPayload {
 @Processor("order")
 export class OrderConsumer {
   constructor(
-    @InjectRepository(Cooker)
-    private cookerRepository: Repository<Cooker>,
+    private cooksService: CooksService,
     private readonly dishesService: DishesService,
     private readonly stockService: StockService
   ) {}
 
   @Process()
   async transcode(job: Job<OrderPayload>) {
-    await this.cookerRepository.update(job.data.cooker.id, {
-      status: "unavailable",
-    });
+    const cooker = new Cooker(job.data.cooker);
 
-    const createdDish = await this.dishesService.create({
-      ...job.data,
-      ...job.data.dish,
-    });
+    cooker.status = "unavailable";
 
-    await this.cookerRepository.update(job.data.cooker.id, {
-      status: "available",
-      experience: job.data.cooker.experience + createdDish.experience,
-    });
+    await this.cooksService.update(job.data.cooker.id, cooker);
 
     job.data.ingredients.map(async (ingredient) => {
-      const foundIngredient = await this.stockService.findOne(
-        undefined,
-        ingredient.id
-      );
+      const foundIngredient = await this.stockService.findOne({
+        ingredientId: ingredient.id,
+      });
 
       const remainingQuantity = foundIngredient.quantity - ingredient.quantity;
 
@@ -55,5 +44,18 @@ export class OrderConsumer {
         });
       }
     });
+
+    const createdDish = await this.dishesService.create({
+      ...job.data,
+      ...job.data.dish,
+    });
+
+    cooker.status = "available";
+
+    cooker.addExperience(createdDish.experience);
+
+    await this.cooksService.update(job.data.cooker.id, cooker);
+
+    job.finished();
   }
 }
