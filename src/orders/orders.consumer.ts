@@ -33,10 +33,11 @@ export class OrderConsumer {
       const cooker = await this.cooksService.findAvailableCooker(restaurantId);
 
       if (!cooker) {
-        this.logger.error(
+        await job.moveToFailed({ message: "No available cookers" });
+
+        throw new Error(
           `[OrderQueue: ${job.id}] No cooker available to make ${dish.name}`
         );
-        return await job.moveToFailed({ message: "No available cookers" });
       }
 
       await Promise.all([
@@ -47,7 +48,7 @@ export class OrderConsumer {
         }),
       ]);
 
-      this.cookingOrderQueue.add(
+      await this.cookingOrderQueue.add(
         {
           restaurantId,
           ingredients,
@@ -58,7 +59,7 @@ export class OrderConsumer {
       );
 
       this.logger.log(
-        `[OrderQueue: ${job.id}] Added ${dish.name} to cooking queue for ${cooker.name}`
+        `[CookingQueue: ${job.id}] Added ${dish.name} to cooking queue for ${cooker.name}`
       );
 
       await job.moveToCompleted();

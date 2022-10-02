@@ -51,12 +51,11 @@ export class CustomersService {
 
       const awaitingToCookQueue = failedCount + queueCount;
 
-      this.logger.warn(`In queue ${awaitingToCookQueue}`);
-
       if (awaitingToCookQueue >= MAXIMUM_ORDERS_PER_RESTAURANT) {
         throw new Error("Too many orders awaiting to cook");
       }
 
+      this.logger.warn(`Ordering ${dish.name} for ${restaurant.name}`);
       await this.orderQueue.add({
         restaurantId: restaurant.id,
         dish,
