@@ -11,7 +11,7 @@ import { Restaurant } from "src/restaurants/entities/restaurant.entity";
 import { StockService } from "src/stock/stock.service";
 import { Repository } from "typeorm";
 
-const MAXIMUM_ORDERS_PER_RESTAURANT = 5;
+const MAXIMUM_ORDERS_PER_RESTAURANT = 3;
 
 @Injectable()
 export class CustomersService {
@@ -25,7 +25,7 @@ export class CustomersService {
     @InjectQueue(QueueName.ORDER) private orderQueue: Queue<OrderPayload>
   ) {}
 
-  @Interval(2000)
+  @Interval(1000)
   handleCron() {
     this.makeOrder();
   }
@@ -52,15 +52,21 @@ export class CustomersService {
       const awaitingToCookQueue = failedCount + queueCount;
 
       if (awaitingToCookQueue >= MAXIMUM_ORDERS_PER_RESTAURANT) {
-        throw new Error("Too many orders awaiting to cook");
+        throw new Error(
+          `Too many orders awaiting to cook, maximum is ${MAXIMUM_ORDERS_PER_RESTAURANT}.
+          In queue ${awaitingToCookQueue}`
+        );
       }
 
       this.logger.warn(`Ordering ${dish.name} for ${restaurant.name}`);
-      await this.orderQueue.add({
-        restaurantId: restaurant.id,
-        dish,
-        ingredients,
-      });
+      await this.orderQueue.add(
+        {
+          restaurantId: restaurant.id,
+          dish,
+          ingredients,
+        },
+        { removeOnComplete: true }
+      );
     } catch (e) {
       this.logger.error(e.message);
     }

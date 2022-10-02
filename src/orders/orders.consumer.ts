@@ -33,10 +33,8 @@ export class OrderConsumer {
       const cooker = await this.cooksService.findAvailableCooker(restaurantId);
 
       if (!cooker) {
-        await job.moveToFailed({ message: "No available cookers" });
-
         throw new Error(
-          `[OrderQueue: ${job.id}] No cooker available to make ${dish.name}`
+          `Moved job ${job.id} to failed because there is no available cooker`
         );
       }
 
@@ -55,16 +53,16 @@ export class OrderConsumer {
           dish,
           cooker,
         },
-        { delay: dish.timeToCook }
+        { delay: dish.timeToCook, removeOnComplete: true, lifo: true }
       );
 
       this.logger.log(
-        `[CookingQueue: ${job.id}] Added ${dish.name} to cooking queue for ${cooker.name}`
+        `[CookingQueue:${job.id}] Added ${dish.name} to cooking queue for ${cooker.name}`
       );
-
-      await job.moveToCompleted();
     } catch (e) {
       this.logger.error(e?.message || e);
+
+      throw e;
     }
   }
 }

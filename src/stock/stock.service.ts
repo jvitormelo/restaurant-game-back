@@ -141,7 +141,10 @@ export class StockService {
         ingredientId: ingredient.id,
       });
 
-      if (!stockIngredient) throw new Error("Ingredient in stock not found");
+      if (!stockIngredient) {
+        // throw new Error("Ingredient in stock not found");
+        return;
+      }
 
       const remainingQuantity = stockIngredient.quantity - ingredient.quantity;
 

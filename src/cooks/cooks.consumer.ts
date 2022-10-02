@@ -27,24 +27,26 @@ export class CooksConsumer {
       await this.cooksService.cook(cooker, dish, ingredients, restaurantId);
 
       this.logger.log(
-        `[CookingQueue ${job.id}] ${dish.name} cooked by ${cooker.name}`
+        `[CookingQueue:${job.id}] ${dish.name} cooked by ${cooker.name}`
       );
 
-      const orderJobs = await this.orderQueue.getFailed();
-      if (orderJobs) {
-        const orderJob = orderJobs[orderJobs.length - 1];
-
-        if (orderJob) {
-          await orderJob?.retry();
-          this.logger.warn(
-            `Retrying job ${orderJob.id}: ${orderJob.data.dish.name}`
-          );
-        }
-      }
-
-      job.moveToCompleted();
+      await this.retryOrderJob();
     } catch (e) {
       this.logger.error(e?.message || e);
+    }
+  }
+
+  async retryOrderJob() {
+    const orderJobs = await this.orderQueue.getFailed();
+    if (orderJobs) {
+      const orderJob = orderJobs[0];
+
+      if (orderJob) {
+        await orderJob.retry();
+        this.logger.verbose(
+          `Retrying job ${orderJob.id}: ${orderJob.data.dish.name}`
+        );
+      }
     }
   }
 }
