@@ -11,6 +11,16 @@ export class Ingredient {
   @Column("varchar")
   name: string;
 
+  @Column({
+    default: 1,
+  })
+  price: number;
+
+  @Column({
+    default: "",
+  })
+  image: string;
+
   @Column("enum", { enum: IngredientCategory })
   category: IngredientCategory;
 

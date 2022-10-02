@@ -20,12 +20,25 @@ export class RestaurantsService {
     return this.restaurantRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} restaurant`;
+  findOne(id: string) {
+    return this.restaurantRepository.findOneOrFail({
+      where: {
+        id,
+      },
+    });
   }
 
   update(id: number, updateRestaurantDto: UpdateRestaurantDto) {
-    return `This action updates a #${id} restaurant`;
+    return `This action updates a #${id} restaurant ${updateRestaurantDto}`;
+  }
+
+  // TODO MOVE TO QUEUE
+  async updateBalance(id: string, amount: number) {
+    const restaurant = await this.findOne(id);
+
+    return this.restaurantRepository.update(id, {
+      money: restaurant.money + amount,
+    });
   }
 
   remove(id: number) {

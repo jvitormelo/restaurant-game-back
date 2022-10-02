@@ -1,7 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { IngredientCategory } from "src/ingredients/constants/category.enum";
+import { IngredientsService } from "src/ingredients/ingredients.service";
 import { MenuDish } from "src/menus/entities/menu.entity";
+import { RestaurantsService } from "src/restaurants/restaurants.service";
 import { FindOptionsWhere, Repository } from "typeorm";
 import { CreateStockDto } from "./dto/create-stock.dto";
 import { UpdateStockDto } from "./dto/update-stock.dto";
@@ -21,8 +23,32 @@ interface FindAllParams {
 export class StockService {
   constructor(
     @InjectRepository(Stock)
-    private stockRepository: Repository<Stock>
+    private stockRepository: Repository<Stock>,
+    private ingredientService: IngredientsService,
+    private restaurantService: RestaurantsService
   ) {}
+
+  async buyIngredients({
+    ingredientId,
+    quantity,
+    restaurantId,
+  }: CreateStockDto) {
+    const [ingredient, stockIngredient] = await Promise.all([
+      this.ingredientService.findOne(ingredientId),
+      this.findOne({ ingredientId }),
+    ]);
+
+    const totalPrice = ingredient.price * quantity;
+
+    this.restaurantService.updateBalance(restaurantId, -totalPrice);
+
+    if (!stockIngredient) {
+      return this.create({ ingredientId, quantity, restaurantId });
+    }
+    return this.update(stockIngredient.id, {
+      quantity: stockIngredient.quantity + quantity,
+    });
+  }
 
   create(createStockDto: CreateStockDto) {
     const stock = new Stock(createStockDto);

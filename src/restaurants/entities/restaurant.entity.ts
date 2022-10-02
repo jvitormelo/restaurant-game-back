@@ -13,6 +13,9 @@ export class Restaurant {
   @Column({ default: 1 })
   level: number;
 
+  @Column({ default: 100 })
+  money: number;
+
   @OneToMany(() => Stock, (stock) => stock.restaurant)
   stocks: Stock[];
 

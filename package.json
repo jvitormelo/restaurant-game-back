@@ -1,8 +1,8 @@
 {
-  "name": "restaurant-inventory",
-  "version": "0.0.1",
+  "name": "restaurant-game",
+  "version": "1.0.0",
   "description": "",
-  "author": "",
+  "author": "Sanford",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

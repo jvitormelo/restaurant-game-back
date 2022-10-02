@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { getRandomValueFromArray } from "src/shared/getRandomValueFromArray";
+import { getRandomValueFromArray } from "src/common/utils/getRandomValueFromArray";
+
 import { LessThanOrEqual, Repository } from "typeorm";
 import { CreateMenuDto } from "./dto/create-menu.dto";
 import { UpdateMenuDto } from "./dto/update-menu.dto";

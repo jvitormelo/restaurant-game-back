@@ -6,7 +6,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   port: 3306,
   username: "root",
   password: "secret",
-  database: "inventory",
+  database: "restaurant",
   entities: ["dist/**/*.entity.js"],
   synchronize: true,
 };

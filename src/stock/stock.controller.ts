@@ -35,6 +35,7 @@ export class StockController {
     return this.stockService.update(id, updateStockDto);
   }
 
+  @Delete(":id")
   remove(@Param() id: string) {
     return this.stockService.remove(id);
   }

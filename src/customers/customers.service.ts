@@ -27,6 +27,7 @@ export class CustomersService {
 
   @Interval(4000)
   handleCron() {
+    return null;
     this.makeOrder();
   }
 
@@ -35,6 +36,12 @@ export class CustomersService {
       this.logger.log(`New customer arrived`);
       const [restaurant] = await this.restaurantRepository.find();
 
+      const awaitingToCookQueue = await this.orderQueue.getFailedCount();
+
+      if (awaitingToCookQueue > MAXIMUM_ORDERS_PER_RESTAURANT) {
+        throw new Error("Too many orders awaiting to cook");
+      }
+
       const dish = await this.menusService.findRandomDish(restaurant.level);
 
       const restaurantStock = await this.stockService.findAll({
@@ -42,12 +49,6 @@ export class CustomersService {
           restaurantId: restaurant.id,
         },
       });
-
-      const awaitingToCookQueue = await this.orderQueue.getFailedCount();
-
-      if (awaitingToCookQueue > MAXIMUM_ORDERS_PER_RESTAURANT) {
-        throw new Error("Too many orders awaiting to cook");
-      }
 
       const ingredients = this.stockService.verifyStock(dish, restaurantStock);
 
