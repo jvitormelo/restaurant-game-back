@@ -16,6 +16,17 @@ import { UpdateStockDto } from "./dto/update-stock.dto";
 export class StockController {
   constructor(private readonly stockService: StockService) {}
 
+  @Post("buy/:id")
+  buy(
+    @Param("id") id: string,
+    @Body() createStockDto: Omit<CreateStockDto, "ingredientId">
+  ) {
+    return this.stockService.buyIngredients({
+      ...createStockDto,
+      ingredientId: id,
+    });
+  }
+
   @Post()
   create(@Body() createStockDto: CreateStockDto) {
     return this.stockService.create(createStockDto);

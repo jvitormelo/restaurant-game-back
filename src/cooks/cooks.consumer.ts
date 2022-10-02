@@ -6,8 +6,7 @@ import { OrderPayload } from "src/orders/orders.consumer";
 import { CooksService } from "./cooks.service";
 import { Cooker } from "./entities/cooker.entity";
 
-export interface CookingOrderPayload
-  extends Omit<OrderPayload, "restaurantId"> {
+export interface CookingOrderPayload extends OrderPayload {
   cooker: Cooker;
 }
 
@@ -22,19 +21,30 @@ export class CooksConsumer {
 
   @Process()
   async cook(job: Job<CookingOrderPayload>) {
-    const { cooker: cookerData, dish, ingredients } = job.data;
+    try {
+      const { cooker, dish, ingredients, restaurantId } = job.data;
 
-    this.logger.log(`Cooking ${dish.name} by ${cookerData.name}`);
+      await this.cooksService.cook(cooker, dish, ingredients, restaurantId);
 
-    const cooker = new Cooker(cookerData);
+      this.logger.log(
+        `[CookingQueue ${job.id}] ${dish.name} cooked by ${cooker.name}`
+      );
 
-    await this.cooksService.cook(cooker, dish, ingredients);
+      const orderJobs = await this.orderQueue.getFailed();
+      if (orderJobs) {
+        const orderJob = orderJobs[orderJobs.length - 1];
 
-    this.logger.log(`Order ${job.id} cooked by ${cooker.name}`);
+        if (orderJob) {
+          await orderJob?.retry();
+          this.logger.warn(
+            `Retrying job ${orderJob.id}: ${orderJob.data.dish.name}`
+          );
+        }
+      }
 
-    const orderJobs = await this.orderQueue.getFailed();
-    orderJobs.forEach((orderJob) => orderJob.retry());
-
-    job.moveToCompleted();
+      job.moveToCompleted();
+    } catch (e) {
+      this.logger.error(e?.message || e);
+    }
   }
 }

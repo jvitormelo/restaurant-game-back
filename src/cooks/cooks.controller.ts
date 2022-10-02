@@ -15,6 +15,11 @@ import { UpdateCookDto } from "./dto/update-cooker.dto";
 export class CooksController {
   constructor(private readonly cooksService: CooksService) {}
 
+  @Post("hire")
+  async hire(@Body() createCookDto: CreateCookDto) {
+    return this.cooksService.hire(createCookDto);
+  }
+
   @Post()
   create(@Body() createCookDto: CreateCookDto) {
     return this.cooksService.create(createCookDto);

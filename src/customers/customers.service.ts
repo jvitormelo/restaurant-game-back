@@ -25,22 +25,14 @@ export class CustomersService {
     @InjectQueue(QueueName.ORDER) private orderQueue: Queue<OrderPayload>
   ) {}
 
-  @Interval(4000)
+  @Interval(2000)
   handleCron() {
-    return null;
     this.makeOrder();
   }
 
   async makeOrder() {
     try {
-      this.logger.log(`New customer arrived`);
       const [restaurant] = await this.restaurantRepository.find();
-
-      const awaitingToCookQueue = await this.orderQueue.getFailedCount();
-
-      if (awaitingToCookQueue > MAXIMUM_ORDERS_PER_RESTAURANT) {
-        throw new Error("Too many orders awaiting to cook");
-      }
 
       const dish = await this.menusService.findRandomDish(restaurant.level);
 
@@ -52,7 +44,18 @@ export class CustomersService {
 
       const ingredients = this.stockService.verifyStock(dish, restaurantStock);
 
-      this.logger.log(`Ordering ${dish.name} from ${restaurant.name}`);
+      const [failedCount, queueCount] = await Promise.all([
+        this.orderQueue.getFailedCount(),
+        this.orderQueue.count(),
+      ]);
+
+      const awaitingToCookQueue = failedCount + queueCount;
+
+      this.logger.warn(`In queue ${awaitingToCookQueue}`);
+
+      if (awaitingToCookQueue >= MAXIMUM_ORDERS_PER_RESTAURANT) {
+        throw new Error("Too many orders awaiting to cook");
+      }
 
       await this.orderQueue.add({
         restaurantId: restaurant.id,

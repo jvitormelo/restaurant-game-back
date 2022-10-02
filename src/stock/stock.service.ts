@@ -40,7 +40,7 @@ export class StockService {
 
     const totalPrice = ingredient.price * quantity;
 
-    this.restaurantService.updateBalance(restaurantId, -totalPrice);
+    await this.restaurantService.updateBalance(restaurantId, -totalPrice);
 
     if (!stockIngredient) {
       return this.create({ ingredientId, quantity, restaurantId });
@@ -141,13 +141,12 @@ export class StockService {
         ingredientId: ingredient.id,
       });
 
+      if (!stockIngredient) throw new Error("Ingredient in stock not found");
+
       const remainingQuantity = stockIngredient.quantity - ingredient.quantity;
 
       if (remainingQuantity <= 0) {
-        console.warn("ingredient", ingredient);
-        console.warn("removing ingredient from stock");
-
-        // await this.remove(foundIngredient.id);
+        await this.remove(stockIngredient.id);
       } else {
         await this.update(stockIngredient.id, {
           quantity: remainingQuantity,

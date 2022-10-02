@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateRestaurantDto } from "./dto/create-restaurant.dto";
@@ -35,6 +35,10 @@ export class RestaurantsService {
   // TODO MOVE TO QUEUE
   async updateBalance(id: string, amount: number) {
     const restaurant = await this.findOne(id);
+
+    if (restaurant.money + amount < 0) {
+      throw new BadRequestException("Not enough money");
+    }
 
     return this.restaurantRepository.update(id, {
       money: restaurant.money + amount,
