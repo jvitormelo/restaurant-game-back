@@ -44,12 +44,7 @@ export class CustomersService {
 
       const ingredients = this.stockService.verifyStock(dish, restaurantStock);
 
-      const [failedCount, queueCount] = await Promise.all([
-        this.orderQueue.getFailedCount(),
-        this.orderQueue.count(),
-      ]);
-
-      const awaitingToCookQueue = failedCount + queueCount;
+      const awaitingToCookQueue = await this.orderQueue.getFailedCount();
 
       if (awaitingToCookQueue >= MAXIMUM_ORDERS_PER_RESTAURANT) {
         throw new Error(
