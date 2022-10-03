@@ -2,14 +2,12 @@ import { InjectQueue } from "@nestjs/bull";
 import { Injectable } from "@nestjs/common";
 import { Logger } from "@nestjs/common/services";
 import { Interval } from "@nestjs/schedule";
-import { InjectRepository } from "@nestjs/typeorm";
 import { Queue } from "bull";
 import { QueueName } from "src/common/constants/queue-name.constant";
 import { MenusService } from "src/menus/menus.service";
 import { OrderPayload } from "src/orders/orders.consumer";
-import { Restaurant } from "src/restaurants/entities/restaurant.entity";
+import { RestaurantsService } from "src/restaurants/restaurants.service";
 import { StockService } from "src/stock/stock.service";
-import { Repository } from "typeorm";
 
 const MAXIMUM_ORDERS_PER_RESTAURANT = 3;
 
@@ -18,21 +16,20 @@ export class CustomersService {
   private readonly logger = new Logger(CustomersService.name);
 
   constructor(
-    @InjectRepository(Restaurant)
-    private restaurantRepository: Repository<Restaurant>,
+    private restaurantService: RestaurantsService,
     private menusService: MenusService,
     private stockService: StockService,
     @InjectQueue(QueueName.ORDER) private orderQueue: Queue<OrderPayload>
   ) {}
 
-  @Interval(1000)
+  @Interval(5000)
   handleCron() {
     this.makeOrder();
   }
 
   async makeOrder() {
     try {
-      const [restaurant] = await this.restaurantRepository.find();
+      const [restaurant] = await this.restaurantService.findAll();
 
       const dish = await this.menusService.findRandomDish(restaurant.level);
 
@@ -54,6 +51,7 @@ export class CustomersService {
       }
 
       this.logger.warn(`Ordering ${dish.name} for ${restaurant.name}`);
+
       await this.orderQueue.add(
         {
           restaurantId: restaurant.id,

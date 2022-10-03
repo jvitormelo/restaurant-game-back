@@ -16,7 +16,6 @@ export class CooksService {
   constructor(
     @InjectRepository(Cooker)
     private cookerRepository: Repository<Cooker>,
-
     private dishesService: DishesService,
     private restaurantService: RestaurantsService
   ) {}

@@ -17,9 +17,9 @@ export interface OrderPayload {
 @Processor(QueueName.ORDER)
 export class OrderConsumer {
   constructor(
-    private cooksService: CooksService,
     @InjectQueue(QueueName.COOKING_ORDER)
     private cookingOrderQueue: Queue<CookingOrderPayload>,
+    private cooksService: CooksService,
     private stockService: StockService
   ) {}
 

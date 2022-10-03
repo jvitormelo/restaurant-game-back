@@ -1,16 +1,19 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Ingredient } from "src/ingredients/entities/ingredient.entity";
-import { IngredientsService } from "src/ingredients/ingredients.service";
-import { Restaurant } from "src/restaurants/entities/restaurant.entity";
-import { RestaurantsService } from "src/restaurants/restaurants.service";
+import { IngredientsModule } from "src/ingredients/ingredients.module";
+import { RestaurantsModule } from "src/restaurants/restaurants.module";
 import { Stock } from "./entities/stock.entity";
 import { StockController } from "./stock.controller";
 import { StockService } from "./stock.service";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Stock, Ingredient, Restaurant])],
+  imports: [
+    TypeOrmModule.forFeature([Stock]),
+    IngredientsModule,
+    RestaurantsModule,
+  ],
   controllers: [StockController],
-  providers: [StockService, IngredientsService, RestaurantsService],
+  providers: [StockService],
+  exports: [StockService],
 })
 export class StockModule {}
