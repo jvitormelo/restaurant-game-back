@@ -1,7 +1,9 @@
-import { BullModule } from "@nestjs/bull";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { QueueName } from "src/common/constants/queue-name.constant";
+import {
+  registerCookingOrderQueue,
+  registerOrderQueue,
+} from "src/common/config/queues.config";
 import { DishesModule } from "src/dishes/dishes.module";
 import { RestaurantsModule } from "src/restaurants/restaurants.module";
 import { CooksConsumer } from "./cooks.consumer";
@@ -11,15 +13,11 @@ import { Cooker } from "./entities/cooker.entity";
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Cooker]),
     DishesModule,
     RestaurantsModule,
-    TypeOrmModule.forFeature([Cooker]),
-    BullModule.registerQueue({
-      name: QueueName.COOKING_ORDER,
-    }),
-    BullModule.registerQueue({
-      name: QueueName.ORDER,
-    }),
+    registerCookingOrderQueue(),
+    registerOrderQueue(),
   ],
   controllers: [CooksController],
   providers: [CooksService, CooksConsumer],

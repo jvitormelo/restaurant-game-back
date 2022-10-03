@@ -1,6 +1,6 @@
-import { InjectQueue, Process, Processor } from "@nestjs/bull";
+import { Process, Processor } from "@nestjs/bull";
 import { Logger } from "@nestjs/common";
-import { Job, Queue } from "bull";
+import { Job } from "bull";
 import { QueueName } from "src/common/constants/queue-name.constant";
 import { OrderPayload } from "src/orders/orders.consumer";
 import { CooksService } from "./cooks.service";
@@ -12,12 +12,9 @@ export interface CookingOrderPayload extends OrderPayload {
 
 @Processor(QueueName.COOKING_ORDER)
 export class CooksConsumer {
-  private readonly logger = new Logger(CooksConsumer.name);
+  constructor(private cooksService: CooksService) {}
 
-  constructor(
-    private cooksService: CooksService,
-    @InjectQueue(QueueName.ORDER) private orderQueue: Queue<OrderPayload>
-  ) {}
+  private readonly logger = new Logger(CooksConsumer.name);
 
   @Process()
   async cook(job: Job<CookingOrderPayload>) {
@@ -30,23 +27,9 @@ export class CooksConsumer {
         `[CookingQueue:${job.id}] ${dish.name} cooked by ${cooker.name}`
       );
 
-      await this.retryOrderJob();
+      await this.cooksService.retryOrderJob();
     } catch (e) {
       this.logger.error(e?.message || e);
-    }
-  }
-
-  async retryOrderJob() {
-    const orderJobs = await this.orderQueue.getFailed();
-    if (orderJobs) {
-      const orderJob = orderJobs[0];
-
-      if (orderJob) {
-        await orderJob.retry();
-        this.logger.verbose(
-          `Retrying job ${orderJob.id}: ${orderJob.data.dish.name}`
-        );
-      }
     }
   }
 }

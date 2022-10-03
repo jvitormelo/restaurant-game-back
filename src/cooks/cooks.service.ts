@@ -1,7 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bull";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Queue } from "bull";
+import { QueueName } from "src/common/constants/queue-name.constant";
 import { DishesService } from "src/dishes/dishes.service";
 import { MenuDish } from "src/menus/entities/menu.entity";
+import { OrderPayload } from "src/orders/orders.consumer";
 import { RestaurantsService } from "src/restaurants/restaurants.service";
 import { IngredientStock } from "src/stock/types/ingredient-stock";
 import { Repository } from "typeorm";
@@ -17,8 +21,11 @@ export class CooksService {
     @InjectRepository(Cooker)
     private cookerRepository: Repository<Cooker>,
     private dishesService: DishesService,
-    private restaurantService: RestaurantsService
+    private restaurantService: RestaurantsService,
+    @InjectQueue(QueueName.ORDER) private orderQueue: Queue<OrderPayload>
   ) {}
+
+  private readonly logger = new Logger(CooksService.name);
 
   async hire(createCookDto: CreateCookDto) {
     await this.restaurantService.updateBalance(
@@ -84,5 +91,19 @@ export class CooksService {
       this.update(cooker),
       this.restaurantService.updateBalance(restaurantId, createdDish.price),
     ]);
+  }
+
+  async retryOrderJob() {
+    const orderJobs = await this.orderQueue.getFailed();
+    if (orderJobs) {
+      const orderJob = orderJobs[0];
+
+      if (orderJob) {
+        await orderJob.retry();
+        this.logger.verbose(
+          `Retrying job ${orderJob.id}: ${orderJob.data.dish.name}`
+        );
+      }
+    }
   }
 }

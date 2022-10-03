@@ -16,22 +16,22 @@ import { StockModule } from "./stock/stock.module";
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(databaseConfig),
     IngredientsModule,
     StockModule,
     RestaurantsModule,
-    ScheduleModule.forRoot(),
     MenusModule,
     CustomersModule,
+    OrdersModule,
+    CooksModule,
+    DishesModule,
+    ScheduleModule.forRoot(),
+    TypeOrmModule.forRoot(databaseConfig),
     BullModule.forRoot({
       redis: {
         host: "localhost",
         port: 6379,
       },
     }),
-    OrdersModule,
-    CooksModule,
-    DishesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,6 +1,8 @@
-import { BullModule } from "@nestjs/bull";
 import { Module } from "@nestjs/common";
-import { QueueName } from "src/common/constants/queue-name.constant";
+import {
+  registerCookingOrderQueue,
+  registerOrderQueue,
+} from "src/common/config/queues.config";
 import { CooksModule } from "src/cooks/cooks.module";
 import { StockModule } from "src/stock/stock.module";
 import { OrderConsumer } from "./orders.consumer";
@@ -11,12 +13,8 @@ import { OrdersService } from "./orders.service";
   imports: [
     CooksModule,
     StockModule,
-    BullModule.registerQueue({
-      name: QueueName.ORDER,
-    }),
-    BullModule.registerQueue({
-      name: QueueName.COOKING_ORDER,
-    }),
+    registerOrderQueue(),
+    registerCookingOrderQueue(),
   ],
   controllers: [OrdersController],
   providers: [OrdersService, OrderConsumer],
