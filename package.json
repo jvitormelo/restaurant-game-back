@@ -33,6 +33,7 @@
     "amqp-connection-manager": "^4.1.6",
     "amqplib": "^0.10.3",
     "bull": "^4.9.0",
+    "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.3.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

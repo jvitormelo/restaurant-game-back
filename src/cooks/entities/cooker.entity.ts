@@ -10,6 +10,9 @@ export class Cooker {
   @Column()
   name: string;
 
+  @Column()
+  imageUrl: string;
+
   @Column({
     default: 1,
   })

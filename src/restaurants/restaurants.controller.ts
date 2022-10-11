@@ -1,15 +1,16 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from "@nestjs/common";
-import { RestaurantsService } from "./restaurants.service";
+import { RestaurantId } from "src/common/decorators/getRestaurantId.decorator";
 import { CreateRestaurantDto } from "./dto/create-restaurant.dto";
 import { UpdateRestaurantDto } from "./dto/update-restaurant.dto";
+import { RestaurantsService } from "./restaurants.service";
 
 @Controller("restaurants")
 export class RestaurantsController {
@@ -23,6 +24,11 @@ export class RestaurantsController {
   @Get()
   findAll() {
     return this.restaurantsService.findAll();
+  }
+
+  @Get("me")
+  me(@RestaurantId() restaurantId: string) {
+    return this.restaurantsService.findOne(restaurantId);
   }
 
   @Get(":id")

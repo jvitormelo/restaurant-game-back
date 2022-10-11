@@ -22,7 +22,7 @@ export class CustomersService {
     @InjectQueue(QueueName.ORDER) private orderQueue: Queue<OrderPayload>
   ) {}
 
-  @Interval(5000)
+  @Interval(2000)
   handleCron() {
     this.makeOrder();
   }

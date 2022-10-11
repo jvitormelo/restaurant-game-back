@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
 } from "@nestjs/common";
+import { RestaurantId } from "src/common/decorators/getRestaurantId.decorator";
 import { CooksService } from "./cooks.service";
 import { CreateCookDto } from "./dto/create-cooker.dto";
 import { UpdateCookDto } from "./dto/update-cooker.dto";
@@ -26,8 +27,8 @@ export class CooksController {
   }
 
   @Get()
-  findAll() {
-    return this.cooksService.findAll();
+  findAll(@RestaurantId() restaurantId: string) {
+    return this.cooksService.findAll(restaurantId);
   }
 
   @Get(":id")

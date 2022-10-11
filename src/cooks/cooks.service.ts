@@ -44,8 +44,12 @@ export class CooksService {
     });
   }
 
-  findAll() {
-    return `This action returns all cooks`;
+  findAll(restaurantId: string) {
+    return this.cookerRepository.find({
+      where: {
+        restaurant: { id: restaurantId },
+      },
+    });
   }
 
   findOne(id: number) {

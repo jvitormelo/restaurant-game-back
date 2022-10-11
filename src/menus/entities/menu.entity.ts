@@ -5,7 +5,7 @@ export class MenuDish {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({})
+  @Column()
   name: string;
 
   @Column({ default: "" })
@@ -37,4 +37,7 @@ export class MenuDish {
 
   @Column({ default: 0 })
   fishQuantity: number;
+
+  @Column()
+  imageUrl: string;
 }
