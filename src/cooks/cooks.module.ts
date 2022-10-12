@@ -5,6 +5,7 @@ import {
   registerOrderQueue,
 } from "src/common/config/queues.config";
 import { DishesModule } from "src/dishes/dishes.module";
+import { EventsModule } from "src/events/events.module";
 import { RestaurantsModule } from "src/restaurants/restaurants.module";
 import { CooksConsumer } from "./cooks.consumer";
 import { CooksController } from "./cooks.controller";
@@ -18,6 +19,7 @@ import { Cooker } from "./entities/cooker.entity";
     RestaurantsModule,
     registerCookingOrderQueue(),
     registerOrderQueue(),
+    EventsModule,
   ],
   controllers: [CooksController],
   providers: [CooksService, CooksConsumer],

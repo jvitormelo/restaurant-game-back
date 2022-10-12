@@ -7,6 +7,7 @@ import { IngredientStock } from "src/stock/types/ingredient-stock";
 import { Logger } from "@nestjs/common";
 import { CookingOrderPayload } from "src/cooks/cooks.consumer";
 import { StockService } from "src/stock/stock.service";
+import { EventsGateway } from "src/events/events.gateway";
 
 export interface OrderPayload {
   restaurantId: string;
@@ -20,7 +21,8 @@ export class OrderConsumer {
     @InjectQueue(QueueName.COOKING_ORDER)
     private cookingOrderQueue: Queue<CookingOrderPayload>,
     private cooksService: CooksService,
-    private stockService: StockService
+    private stockService: StockService,
+    private eventsGateway: EventsGateway
   ) {}
 
   private readonly logger = new Logger(OrderConsumer.name);
@@ -28,6 +30,10 @@ export class OrderConsumer {
   @Process()
   async addToCookingQueue(job: Job<OrderPayload>) {
     try {
+      this.eventsGateway.server.emit("order-added", {
+        jobId: job.id,
+        data: job.data,
+      });
       const { restaurantId, dish, ingredients } = job.data;
 
       const cooker = await this.cooksService.findAvailableCooker(restaurantId);
@@ -46,8 +52,15 @@ export class OrderConsumer {
         }),
       ]);
 
+      this.eventsGateway.server.emit("order-removed", job.id);
+
+      this.eventsGateway.server.emit("cooking-order-added", {
+        jobId: job.id,
+        data: { ...job.data, cooker },
+      });
       await this.cookingOrderQueue.add(
         {
+          jobId: job.id as number,
           restaurantId,
           ingredients,
           dish,

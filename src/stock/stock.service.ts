@@ -74,36 +74,40 @@ export class StockService {
     return this.stockRepository.delete(id);
   }
 
-  verifyStock(menu: MenuDish, stock: Stock[]) {
-    const ingredients = [
-      { key: "vegetable", category: IngredientCategory.VEGETABLE },
-      { key: "fruit", category: IngredientCategory.FRUIT },
-      { key: "dairy", category: IngredientCategory.DAIRY },
-      { key: "meat", category: IngredientCategory.MEAT },
-      { key: "fish", category: IngredientCategory.FISH },
-    ];
+  verifyStock(menu: MenuDish, stock: Stock[]): IngredientStock[] | string {
+    try {
+      const ingredients = [
+        { key: "vegetable", category: IngredientCategory.VEGETABLE },
+        { key: "fruit", category: IngredientCategory.FRUIT },
+        { key: "dairy", category: IngredientCategory.DAIRY },
+        { key: "meat", category: IngredientCategory.MEAT },
+        { key: "fish", category: IngredientCategory.FISH },
+      ];
 
-    const toRemoveStock: IngredientStock[] = [];
+      const toRemoveStock: IngredientStock[] = [];
 
-    ingredients.forEach(({ key, category }) => {
-      const quantity = menu[`${key}Quantity`];
+      ingredients.forEach(({ key, category }) => {
+        const quantity = menu[`${key}Quantity`];
 
-      if (!quantity) return;
+        if (!quantity) return;
 
-      const result = this.verifyIfHaveIngredientInStock(
-        quantity,
-        category,
-        stock
-      );
+        const result = this.verifyIfHaveIngredientInStock(
+          quantity,
+          category,
+          stock
+        );
 
-      if (!result) {
-        throw new Error(`Not enough ${key}`);
-      }
+        if (!result) {
+          throw key;
+        }
 
-      toRemoveStock.push(result);
-    });
+        toRemoveStock.push(result);
+      });
 
-    return toRemoveStock;
+      return toRemoveStock;
+    } catch (error) {
+      return error;
+    }
   }
 
   private verifyIfHaveIngredientInStock(

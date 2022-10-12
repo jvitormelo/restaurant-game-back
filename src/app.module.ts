@@ -13,6 +13,7 @@ import { MenusModule } from "./menus/menus.module";
 import { OrdersModule } from "./orders/orders.module";
 import { RestaurantsModule } from "./restaurants/restaurants.module";
 import { StockModule } from "./stock/stock.module";
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { StockModule } from "./stock/stock.module";
         port: 6379,
       },
     }),
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

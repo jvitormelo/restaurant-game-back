@@ -31,6 +31,9 @@ export class Cooker {
   })
   status: CookStatus;
 
+  @Column({ default: true })
+  enabled: boolean;
+
   addExperience(experience: number) {
     this.experience += experience;
 

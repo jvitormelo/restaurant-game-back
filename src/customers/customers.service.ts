@@ -4,6 +4,7 @@ import { Logger } from "@nestjs/common/services";
 import { Interval } from "@nestjs/schedule";
 import { Queue } from "bull";
 import { QueueName } from "src/common/constants/queue-name.constant";
+import { EventsGateway } from "src/events/events.gateway";
 import { MenusService } from "src/menus/menus.service";
 import { OrderPayload } from "src/orders/orders.consumer";
 import { RestaurantsService } from "src/restaurants/restaurants.service";
@@ -16,6 +17,7 @@ export class CustomersService {
   private readonly logger = new Logger(CustomersService.name);
 
   constructor(
+    private eventGateway: EventsGateway,
     private restaurantService: RestaurantsService,
     private menusService: MenusService,
     private stockService: StockService,
@@ -40,6 +42,13 @@ export class CustomersService {
       });
 
       const ingredients = this.stockService.verifyStock(dish, restaurantStock);
+
+      if (!Array.isArray(ingredients)) {
+        this.eventGateway.server.emit("no-ingredients", {
+          ingredient: ingredients,
+        });
+        throw new Error(`Not enough ${ingredients} to make the dish`);
+      }
 
       const awaitingToCookQueue = await this.orderQueue.getFailedCount();
 

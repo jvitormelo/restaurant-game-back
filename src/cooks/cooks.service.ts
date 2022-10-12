@@ -49,6 +49,7 @@ export class CooksService {
       where: {
         restaurant: { id: restaurantId },
       },
+      order: { level: "DESC" },
     });
   }
 
@@ -69,6 +70,7 @@ export class CooksService {
       where: {
         restaurant: { id: restaurantId },
         status: "available",
+        enabled: true,
       },
     });
   }
